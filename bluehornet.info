@@ -1,0 +1,6 @@
+name = Bluehornet Webform Integration
+description = Push Webform data into Bluehornet email system.
+core = 7.x
+package = Bluehornet
+
+dependencies[] = webform

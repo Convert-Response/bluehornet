@@ -1,0 +1,76 @@
+<?php
+/**
+* @file
+* Webform module to submit to Blue Hornet email system
+*/
+
+/**
+* Add configuration options to the Webforms page
+*/
+function webform_bluehornet_menu() {
+
+  $items['admin/config/content/bluehornet'] = array(
+    'title' => 'Webform - Blue Hornet',
+    'description' => 'Blue Hornet global settings.',
+    'position' => 'left',
+    'weight' => 3,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer site configuration'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+
+  $items['admin/config/content/bluehornet/settings'] = array(
+	'title' => 'Bluehornet Settings',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('bluehornet_admin_settings'),
+	'access arguments' => array('administer site configuration'),
+	'type' => MENU_CALLBACK,
+	'file' => 'includes/bluehornet.admin.inc',
+	'weight' => 2,
+  );
+  return $items;
+}
+
+
+function webform_menu_alter(&$items) {
+
+  $items['node/%node/webform_convertmail'] = array(
+    'title' => 'Blue Hornet',
+    'page callback' => 'webform_convertmail_form_settings',
+    'access arguments' => array('access overlay'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'file' => 'includes/webform_convertmail_form_settings.inc',
+    'weight' => 2,
+  );  
+  return $items;
+}
+
+/**
+* Submit to Blue Hornet once Webforms submission is complete 
+*/
+function webfrom_convertmail_webform_submission_insert($node, $submission) {
+
+  //System variables
+  $url = variable_get('submission_url');
+  $group = variable_get('group');
+  $cid = variable_get('cid');
+  
+  $firstname = $_POST['submitted']['first_name'];
+  $lastname = $_POST['submitted']['last_name'];
+  $email = $_POST['submitted']['email'];
+  $postal = $_POST['submitted']['postal_code'];
+  $rfid = $_POST['submitted']['rfid'];
+
+  $myvars = 'firstname=' . $firstname . '&lastname=' . $lastname . '&cid=' . $cid . '&email=' . $email . '&postal_code=' . $postal . '&field_array[249598]=' . $rfid . '&grp[]=' . $group;
+
+  print($url . '?' . $myvars);
+  exit;
+  // $ch = curl_init($url);
+//   curl_setopt($ch, CURLOPT_POST, 1);
+//   curl_setopt($ch, CURLOPT_POSTFIELDS, $myvars);
+//   curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+//   curl_setopt($ch, CURLOPT_HEADER, 0);
+//   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//   $response = curl_exec($ch);
+}
