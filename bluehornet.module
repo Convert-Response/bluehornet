@@ -5,51 +5,39 @@
 */
 
 /**
-* Add configuration options to the Webforms page
-*/
-function webform_bluehornet_menu() {
+ * Add Global Configuration Menu
+ */
+function bluehornet_admin() {
+  $form = array();
 
-  $items['admin/config/content/bluehornet'] = array(
-    'title' => 'Webform - Blue Hornet',
-    'description' => 'Blue Hornet global settings.',
-    'position' => 'left',
-    'weight' => 3,
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer site configuration'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
+  $form['bluehornet_cid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Bluehornet CID'),
+    '#default_value' => variable_get('bluehornet_cid', 'XXXXXXX'),
+    '#size' => 32,
+    '#maxlength' => 2,
+    '#description' => t("CID of the Bluehornet Account"),
+    '#required' => TRUE, 
   );
-
-  $items['admin/config/content/bluehornet/settings'] = array(
-	'title' => 'Bluehornet Settings',
-	'page callback' => 'drupal_get_form',
-	'page arguments' => array('bluehornet_admin_settings'),
-	'access arguments' => array('administer site configuration'),
-	'type' => MENU_CALLBACK,
-	'file' => 'includes/bluehornet.admin.inc',
-	'weight' => 2,
-  );
-  return $items;
+  
+  return system_settings_form($form);
 }
 
-
-function webform_menu_alter(&$items) {
-
-  $items['node/%node/webform_convertmail'] = array(
-    'title' => 'Blue Hornet',
-    'page callback' => 'webform_convertmail_form_settings',
-    'access arguments' => array('access overlay'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'file' => 'includes/webform_convertmail_form_settings.inc',
-    'weight' => 2,
-  );  
-  return $items;
+/**
+ * Implements hook_permission().
+ */
+function bluehornet_permission() {
+  return array(
+    'access bluehornet content' => array(
+      'title' => t('Access content for the Bluehornet module'),
+    )
+  );
 }
 
 /**
 * Submit to Blue Hornet once Webforms submission is complete 
 */
-function webfrom_convertmail_webform_submission_insert($node, $submission) {
+function bluehornet_webform_submission_insert($node, $submission) {
 
   //System variables
   $url = variable_get('submission_url');
