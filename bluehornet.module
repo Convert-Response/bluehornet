@@ -19,11 +19,20 @@ function bluehornet_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['node/%webform_menu/webform/bluehornet'] = array(
+    'title' => 'Bluehornet',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bluehornet_local_form'),
+    'access arguments' => array('access administration pages'),
+    'weight' => 3,
+    'type' => MENU_LOCAL_TASK,
+  );
+
   return $items;
 }
 
 /**
- * Page callback: Current posts settings
+ * Page callback: Bluehornet settings
  *
  * @see bluehornet_menu()
  */
@@ -46,6 +55,30 @@ function bluehornet_form($form, &$form_state) {
     '#maxlength' => 255,
     '#description' => t('Bluehornet Account Submission URL'),
     '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+function bluehornet_local_form($form, &$form_state) {
+  $form['bluehornet_group_node_'] = array(
+    '#type' => 'textfield',                                                                                                                   
+    '#title' => t('Group ID'),                                                                                                          
+    '#default_value' => variable_get('bluehornet_group_node_'),                                                                                     
+    '#size' => 6,                                                                                                                            
+    '#maxlength' => 6,                                                                                                                       
+    '#description' => t('6 Digit Segment ID Identifier'),                                                                                         
+    '#required' => TRUE,                                                                                                                      
+  );
+
+  $form ['bluehornet_rfid_node_'] = array(
+    '#type' => 'textfield',
+    '#title' => t('RFID Identifier'),
+    '#default_value' => variable_get('bluehornet_rfid_node_'),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#description' => t('6 Digit RFID Identifier'),
+    '#required' => FALSE,
   );
 
   return system_settings_form($form);
