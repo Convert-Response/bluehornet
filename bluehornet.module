@@ -17,7 +17,7 @@ function bluehornet_menu() {
     'page arguments' => array('bluehornet_form'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
-);
+  );
 
   return $items;
 }
@@ -28,7 +28,6 @@ function bluehornet_menu() {
  * @see bluehornet_menu()
  */
 function bluehornet_form($form, &$form_state) {
-  
   $form['bluehornet_cid'] = array(
     '#type' => 'textfield',
     '#title' => t('Bluehornet CID'),
@@ -55,7 +54,6 @@ function bluehornet_form($form, &$form_state) {
 /**
  * Implements hook_permission().
  */
-
 function bluehornet_permission() {
   return array(
     'access bluehornet content' => array(
@@ -67,7 +65,6 @@ function bluehornet_permission() {
 /**
 * Submit to Blue Hornet once Webform submission is complete 
 */
-
 function bluehornet_webform_submission_insert($node, $submission) {
 
   //System variables
