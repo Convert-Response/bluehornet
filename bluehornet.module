@@ -5,27 +5,57 @@
 */
 
 /**
- * Add Global Configuration Menu
+ * Implements hook_menu().
  */
-function bluehornet_admin() {
-  $form = array();
+function bluehornet_menu() {
+  $items = array();
 
+  $items['admin/config/services/bluehornet'] = array(
+    'title' => 'Bluehornet',
+    'description' => 'Configuration for Bluehornet module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bluehornet_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+);
+
+  return $items;
+}
+
+/**
+ * Page callback: Current posts settings
+ *
+ * @see bluehornet_menu()
+ */
+function bluehornet_form($form, &$form_state) {
+  
   $form['bluehornet_cid'] = array(
     '#type' => 'textfield',
     '#title' => t('Bluehornet CID'),
-    '#default_value' => variable_get('bluehornet_cid', 'XXXXXXX'),
+    '#default_value' => variable_get('bluehornet_cid'),
     '#size' => 32,
-    '#maxlength' => 2,
-    '#description' => t("CID of the Bluehornet Account"),
-    '#required' => TRUE, 
+    '#maxlength' => 32,
+    '#description' => t('Bluehornet Client ID Code'),
+    '#required' => TRUE,
   );
   
+  $form['bluehornet_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Bluehornet URL'),
+    '#default_value' => variable_get('bluehornet_url'),
+    '#size' => 50,
+    '#maxlength' => 255,
+    '#description' => t('Bluehornet Account Submission URL'),
+    '#required' => TRUE,
+  );
+
   return system_settings_form($form);
 }
 
 /**
  * Implements hook_permission().
  */
+
 function bluehornet_permission() {
   return array(
     'access bluehornet content' => array(
@@ -35,15 +65,16 @@ function bluehornet_permission() {
 }
 
 /**
-* Submit to Blue Hornet once Webforms submission is complete 
+* Submit to Blue Hornet once Webform submission is complete 
 */
+
 function bluehornet_webform_submission_insert($node, $submission) {
 
   //System variables
-  $url = variable_get('submission_url');
-  $group = variable_get('group');
-  $cid = variable_get('cid');
-  
+  $url = variable_get('bluehornet_url');
+  $cid = variable_get('bluehornet_cid');  
+  $group = variable_get('bluehornet_group');
+
   $firstname = $_POST['submitted']['first_name'];
   $lastname = $_POST['submitted']['last_name'];
   $email = $_POST['submitted']['email'];
