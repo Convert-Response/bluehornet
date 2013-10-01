@@ -60,7 +60,29 @@ function bluehornet_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
+/**
+ *Add Bluehornet Checkbox
+ *
+**/
+function bluehornet_form_alter(&$form, &$form_state, $form_id) {
+  if($form['#node']->type == 'webform') {
+    
+    $form['bluehornet_field'] = array (
+      '#type' => 'fieldset',
+	  '#title' => t('Bluehornet'),
+	);
+	
+	$form['bluehornet_field']['bluehornet'] = array (
+	  '#type' => 'checkbox',
+	  '#title' => t('Submit to Bluehornet?'),
+	  '#default_value' => 1,
+	  '#group' => 'edit',
+	);
+  }
+}
+
 function bluehornet_local_form($form, &$form_state) {
+  
   $form['bluehornet_group_node_'] = array(
     '#type' => 'textfield',                                                                                                                   
     '#title' => t('Group ID'),                                                                                                          
