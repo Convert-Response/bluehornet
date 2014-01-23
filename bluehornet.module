@@ -1,8 +1,8 @@
 <?php
 /**
-* @file
-* Webform module to submit to Blue Hornet email system
-*/
+ * @file
+ * Webform module to submit to Blue Hornet email system
+ */
 
 /**
  * Implements hook_menu().
@@ -36,7 +36,7 @@ function bluehornet_menu() {
  *
  * @see bluehornet_menu()
  */
-function bluehornet_form($form, &$form_state) {
+function bluehornet_form($form) {
   $form['bluehornet_cid'] = array(
     '#type' => 'textfield',
     '#title' => t('Bluehornet CID'),
@@ -46,7 +46,7 @@ function bluehornet_form($form, &$form_state) {
     '#description' => t('Bluehornet Client ID Code'),
     '#required' => TRUE,
   );
-  
+
   $form['bluehornet_url'] = array(
     '#type' => 'textfield',
     '#title' => t('Bluehornet URL'),
@@ -60,46 +60,37 @@ function bluehornet_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
+
 /**
- *Add Bluehornet Checkbox
+ *Add Bluehornet Specific Elements
  *
-**/
-function bluehornet_form_alter(&$form, &$form_state, $form_id) {
-  if($form['#node']->type == 'webform') {
-    
-    $form['bluehornet_field'] = array (
-      '#type' => 'fieldset',
-	  '#title' => t('Bluehornet'),
-	);
-	
-	$form['bluehornet_field']['bluehornet'] = array (
-	  '#type' => 'checkbox',
-	  '#title' => t('Submit to Bluehornet?'),
-	  '#default_value' => 1,
-	  '#group' => 'edit',
-	);
+ **/
+
+function bluehornet_local_form($form) {
+
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    $nodeid = arg(1);
+  } else {
+    $nodeid = null;
   }
-}
 
-function bluehornet_local_form($form, &$form_state) {
-  
-  $form['bluehornet_group_node_'] = array(
-    '#type' => 'textfield',                                                                                                                   
-    '#title' => t('Group ID'),                                                                                                          
-    '#default_value' => variable_get('bluehornet_group_node_'),                                                                                     
-    '#size' => 6,                                                                                                                            
-    '#maxlength' => 6,                                                                                                                       
-    '#description' => t('6 Digit Segment ID Identifier'),                                                                                         
-    '#required' => TRUE,                                                                                                                      
-  );
-
-  $form ['bluehornet_rfid_node_'] = array(
+  $form['bluehornet_group_node_' . $nodeid] = array(
     '#type' => 'textfield',
-    '#title' => t('RFID Identifier'),
-    '#default_value' => variable_get('bluehornet_rfid_node_'),
+    '#title' => t('Group ID'),
+    '#default_value' => variable_get('bluehornet_group_node_' . $nodeid),
     '#size' => 6,
     '#maxlength' => 6,
-    '#description' => t('6 Digit RFID Identifier'),
+    '#description' => t('6 Digit Segment ID Identifier'),
+    '#required' => TRUE,
+  );
+
+  $form ['bluehornet_rfid_node_' . $nodeid] = array(
+    '#type' => 'textfield',
+    '#title' => t('RFID Identifier'),
+    '#default_value' => variable_get('bluehornet_rfid_node_' . $nodeid),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#description' => t('6 Digit RFID Identifier, Found in Bluehornet. <i>&field_array[XXXXXX]</i>'),
     '#required' => FALSE,
   );
 
@@ -118,14 +109,18 @@ function bluehornet_permission() {
 }
 
 /**
-* Submit to Blue Hornet once Webform submission is complete 
-*/
+ * Submit to Blue Hornet once Webform submission is complete
+ */
 function bluehornet_webform_submission_insert($node, $submission) {
+
+  $nid = $node->nid;
+  $sid = $submission->sid;
 
   //System variables
   $url = variable_get('bluehornet_url');
-  $cid = variable_get('bluehornet_cid');  
-  $group = variable_get('bluehornet_group');
+  $cid = variable_get('bluehornet_cid');
+  $group = variable_get('bluehornet_group_node_' . $nid);
+  $rfid_id = variable_get('bluehornet_rfid_node_' . $nid);
 
   $firstname = $_POST['submitted']['first_name'];
   $lastname = $_POST['submitted']['last_name'];
@@ -133,15 +128,18 @@ function bluehornet_webform_submission_insert($node, $submission) {
   $postal = $_POST['submitted']['postal_code'];
   $rfid = $_POST['submitted']['rfid'];
 
-  $myvars = 'firstname=' . $firstname . '&lastname=' . $lastname . '&cid=' . $cid . '&email=' . $email . '&postal_code=' . $postal . '&field_array[249598]=' . $rfid . '&grp[]=' . $group;
+  $myvars = 'firstname=' . $firstname . '&lastname=' . $lastname . '&cid=' . $cid . '&email=' . $email . '&postal_code=' . $postal . '&field_array[' . $rfid_id . ']=' . $rfid . '&grp[]=' . $group;
 
-  print($url . '?' . $myvars);
-  exit;
-  // $ch = curl_init($url);
-//   curl_setopt($ch, CURLOPT_POST, 1);
-//   curl_setopt($ch, CURLOPT_POSTFIELDS, $myvars);
-//   curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-//   curl_setopt($ch, CURLOPT_HEADER, 0);
-//   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-//   $response = curl_exec($ch);
+  $ch = curl_init($url);
+  curl_setopt($ch, CURLOPT_POST, 1);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $myvars);
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  $response = curl_exec($ch);
+
+  //Log the response in Drupal
+  if ($response) {
+    watchdog('Bluehornet Webform SID - ' . $sid, $response);
+  }
 }
